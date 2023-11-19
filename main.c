@@ -2,286 +2,369 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-int main(){
+typedef struct modelo {
+    char **jogo;  // criação da matriz 3x3 com ponteiro de ponteiro
+    int l, c; 
+} t_modelo;
 
-    int l, c, linha, coluna, jogador = 1, ganhou = 0, jogador1_vitorias = 0, jogador2_vitorias = 0, placar = 0;
-    char jogo[3][3];
+typedef struct jogar{
+    int linha;
+    int coluna;
+    int jogador;
+    int empate;
+    char continuar;
+}t_jogar;
 
-    for(l = 0; l <3; l++){
-        for(c = 0; c < 3; c++){
-            jogo[l][c] = ' ';
+typedef struct vencedor{
+    int ganhou;
+    int jogador1_vitorias;
+    int jogador2_vitorias;
+}t_vencedor;
+
+// Função VOID para inicialização do jogo
+void inicializarjogo(t_modelo *design){
+    design->jogo = (char **)malloc(3 * sizeof(char *));  // Alocação de linhas
+    for (design->l = 0; design->l < 3; design->l++) {
+        design->jogo[design->l] = (char *)malloc(3 * sizeof(char));  // Alocação de colunas
+        for (design->c = 0; design->c < 3; design->c++) {
+            design->jogo[design->l][design->c] = ' ';
         }
     }
+}
 
-    do{
-        printf("\n    0   1   2\n    V   V   V\n");
-        for(l = 0; l < 3; l++){
-            for(c = 0; c < 3; c++){
-                if(l == 0 && c == 0)
-                    printf("0 -");
-                if(l == 1 && c == 0)
-                    printf("1 -");
-                if(l == 2 && c == 0)
-                    printf("2 -");
-                printf(" %c ", jogo[l][c]);
-                if (c < 2)
-                    printf("|");
+// Função VOID para liberação de memória alocada
+void liberarMemoria(t_modelo *design) {
+    for (design->l = 0; design->l < 3; design->l++) {
+        free(design->jogo[design->l]);
+    }
+    free(design->jogo);
+}
+
+int main () {
+    t_jogar jogadas;
+    t_modelo design;
+    t_vencedor vencer;
+
+    jogadas.jogador = 1;
+    jogadas.continuar = 's';
+    vencer.ganhou = 0;
+    vencer.jogador1_vitorias = 0;
+    vencer.jogador2_vitorias = 0;
+
+    do {
+        inicializarjogo(&design);
+        do{
+            printf("\n    0   1   2\n    V   V   V\n");
+            for(design.l = 0; design.l < 3; design.l++){
+                for(design.c = 0; design.c < 3; design.c++){
+                    if(design.l == 0 && design.c == 0)
+                        printf("0 -");
+                    if(design.l == 1 && design.c == 0)
+                        printf("1 -");
+                    if(design.l == 2 && design.c == 0)
+                        printf("2 -");
+                    printf(" %c ", design.jogo[design.l][design.c]);
+                    if (design.c < 2)
+                        printf("|");
+                    }
+                    if(design.l < 2){
+                        printf("\n   -----------");
+                    printf("\n");
+                    }
                 }
-                if(l < 2){
+            do{
+                printf("\n\nJOGADOR %d: Digite a Linha e a Coluna que deseja jogar: ", jogadas.jogador);
+                if(scanf("%d%d", &jogadas.linha, &jogadas.coluna) != 2 || (jogadas.linha < 0 || jogadas.linha >= 3 || jogadas.coluna < 0 || jogadas.coluna >= 3) ||
+                isalpha(jogadas.linha) || isalpha(jogadas.coluna)){
+                    printf("Entrada invalida. Digite numeros validos.");
+                    while(getchar() != '\n');
+                    continue;
+                }else if(design.jogo[jogadas.linha][jogadas.coluna] != ' '){
+                    printf("Espaco Ja Preenchido.");
+                }
+            } while ((jogadas.linha < 0 || jogadas.linha >= 3 || jogadas.coluna < 0 || jogadas.coluna >= 3) || isalpha(jogadas.linha) || isalpha(jogadas.coluna)|| design.jogo[jogadas.linha][jogadas.coluna] != ' ');
+
+            if(jogadas.jogador == 1){
+                design.jogo[jogadas.linha][jogadas.coluna] = 'O';
+                jogadas.jogador++;
+            } else{
+                design.jogo[jogadas.linha][jogadas.coluna] = 'X';
+                jogadas.jogador = 1;
+            }
+            jogadas.empate++;
+
+            if(design.jogo[0][0] == 'O' && design.jogo[0][1] == 'O' && design.jogo[0][2] =='O'||
+            design.jogo[1][0] == 'O' && design.jogo[1][1] == 'O' && design.jogo[1][2] =='O'||
+            design.jogo[2][0] == 'O' && design.jogo[2][1] == 'O' && design.jogo[2][2] =='O'){
+                printf("\n    0   1   2\n    V   V   V\n");
+                for(design.l = 0; design.l < 3; design.l++){
+                    for(design.c = 0; design.c < 3; design.c++){
+                        if(design.l == 0 && design.c == 0)
+                            printf("0 -");
+                        if(design.l == 1 && design.c == 0)
+                            printf("1 -");
+                        if(design.l == 2 && design.c == 0)
+                            printf("2 -");
+                        printf(" %c ", design.jogo[design.l][design.c]);
+                        if (design.c < 2)
+                            printf("|");
+                        }
+                        if(design.l < 2){
+                            printf("\n   -----------");
+                        printf("\n");
+                        }
+                }
+                jogadas.empate = 0;
+                vencer.ganhou = 1;
+                printf("\n\nO Jogador 1 Venceu!\n");
+                if(vencer.ganhou == 1){
+                    vencer.jogador1_vitorias++;
+                    jogadas.jogador = 1;
+                    printf("\nPlacar:\nVitorias do Jogador 1: %d\nVitorias do Jogador 2: %d\n", vencer.jogador1_vitorias, vencer.jogador2_vitorias);
+                }
+            }
+
+            if(design.jogo[0][0] == 'X' && design.jogo[0][1] == 'X' && design.jogo[0][2] =='X'||
+            design.jogo[1][0] == 'X' && design.jogo[1][1] == 'X' && design.jogo[1][2] =='X'||
+            design.jogo[2][0] == 'X' && design.jogo[2][1] == 'X' && design.jogo[2][2] =='X'){
+                printf("\n    0   1   2\n    V   V   V\n");
+                for(design.l = 0; design.l < 3; design.l++){
+                    for(design.c = 0; design.c < 3; design.c++){
+                        if(design.l == 0 && design.c == 0)
+                            printf("0 -");
+                        if(design.l == 1 && design.c == 0)
+                            printf("1 -");
+                        if(design.l == 2 && design.c == 0)
+                            printf("2 -");
+                        printf(" %c ", design.jogo[design.l][design.c]);
+                        if (design.c < 2)
+                            printf("|");
+                    }
+                    if(design.l < 2){
+                        printf("\n   -----------");
+                    printf("\n");
+                    }
+                }
+                jogadas.empate = 0;   
+                vencer.ganhou = 1;
+                printf("\n\nO Jogador 2 Venceu!\n");
+                if(vencer.ganhou == 1){
+                    vencer.jogador2_vitorias++;
+                    printf("\nPlacar:\nVitorias do Jogador 1: %d\nVitorias do Jogador 2: %d\n", vencer.jogador1_vitorias, vencer.jogador2_vitorias);
+                }
+            }
+
+            if(design.jogo[0][0] == 'O' && design.jogo[1][0] == 'O' && design.jogo[2][0] =='O'||
+            design.jogo[0][1] == 'O' && design.jogo[1][1] == 'O' && design.jogo[2][1] =='O'||
+            design.jogo[0][2] == 'O' && design.jogo[1][2] == 'O' && design.jogo[2][2] =='O'){
+                printf("\n    0   1   2\n    V   V   V\n");
+                for(design.l = 0; design.l < 3; design.l++){
+                    for(design.c = 0; design.c < 3; design.c++){
+                        if(design.l == 0 && design.c == 0)
+                            printf("0 -");
+                        if(design.l == 1 && design.c == 0)
+                            printf("1 -");
+                        if(design.l == 2 && design.c == 0)
+                            printf("2 -");
+                        printf(" %c ", design.jogo[design.l][design.c]);
+                        if (design.c < 2)
+                            printf("|");
+                    }
+                    if(design.l < 2){
+                        printf("\n   -----------");
+                    printf("\n");
+                    }
+                }
+                jogadas.empate = 0;
+                vencer.ganhou = 1;
+                printf("\n\nO Jogador 1 Venceu!\n");
+                if(vencer.ganhou == 1){
+                    vencer.jogador1_vitorias++;
+                    jogadas.jogador = 1;
+                    printf("\nPlacar:\nVitorias do Jogador 1: %d\nVitorias do Jogador 2: %d\n", vencer.jogador1_vitorias, vencer.jogador2_vitorias);
+                }
+            }
+
+            if(design.jogo[0][0] == 'X' && design.jogo[1][0] == 'X' && design.jogo[2][0] =='X'||
+            design.jogo[0][1] == 'X' && design.jogo[1][1] == 'X' && design.jogo[2][1] =='X'||
+            design.jogo[0][2] == 'X' && design.jogo[1][2] == 'X' && design.jogo[2][2] =='X'){
+            printf("\n    0   1   2\n    V   V   V\n");
+                for(design.l = 0; design.l < 3; design.l++){
+                    for(design.c = 0; design.c < 3; design.c++){
+                        if(design.l == 0 && design.c == 0)
+                            printf("0 -");
+                        if(design.l == 1 && design.c == 0)
+                            printf("1 -");
+                        if(design.l == 2 && design.c == 0)
+                            printf("2 -");
+                        printf(" %c ", design.jogo[design.l][design.c]);
+                        if (design.c < 2)
+                            printf("|");
+                    }
+                    if(design.l < 2){
+                        printf("\n   -----------");
+                    printf("\n");
+                    }
+                }
+                jogadas.empate = 0;
+                vencer.ganhou = 1;
+                printf("\n\nO Jogador 2 Venceu!\n");
+                if(vencer.ganhou == 1){
+                    vencer.jogador2_vitorias++;
+                    printf("\nPlacar:\nVitorias do Jogador 1: %d\nVitorias do Jogador 2: %d\n", vencer.jogador1_vitorias, vencer.jogador2_vitorias);
+                }
+            }
+
+            if(design.jogo[0][0] == 'O' && design.jogo[1][1] == 'O' && design.jogo[2][2] =='O'){
+                printf("\n    0   1   2\n    V   V   V\n");
+                for(design.l = 0; design.l < 3; design.l++){
+                    for(design.c = 0; design.c < 3; design.c++){
+                        if(design.l == 0 && design.c == 0)
+                            printf("0 -");
+                        if(design.l == 1 && design.c == 0)
+                            printf("1 -");
+                        if(design.l == 2 && design.c == 0)
+                            printf("2 -");
+                        printf(" %c ", design.jogo[design.l][design.c]);
+                        if (design.c < 2)
+                            printf("|");
+                    }
+                    if(design.l < 2){
+                        printf("\n   -----------");
+                    printf("\n");
+                    }
+                }
+                jogadas.empate = 0;
+                vencer.ganhou = 1;
+                printf("\n\nO Jogador 1 Venceu!\n");
+                if(vencer.ganhou == 1){
+                    vencer.jogador1_vitorias++;
+                    jogadas.jogador = 1;
+                    printf("\nPlacar:\nVitorias do Jogador 1: %d\nVitorias do Jogador 2: %d\n", vencer.jogador1_vitorias, vencer.jogador2_vitorias);
+                }
+            }
+
+            if(design.jogo[0][0] == 'X' && design.jogo[1][1] == 'X' && design.jogo[2][2] =='X'){
+                printf("\n    0   1   2\n    V   V   V\n");
+                for(design.l = 0; design.l < 3; design.l++){
+                    for(design.c = 0; design.c < 3; design.c++){
+                        if(design.l == 0 && design.c == 0)
+                            printf("0 -");
+                        if(design.l == 1 && design.c == 0)
+                            printf("1 -");
+                        if(design.l == 2 && design.c == 0)
+                            printf("2 -");
+                        printf(" %c ", design.jogo[design.l][design.c]);
+                        if (design.c < 2)
+                            printf("|");
+                    }
+                    if(design.l < 2){
+                        printf("\n   -----------");
+                    printf("\n");
+                    }
+                }
+                jogadas.empate = 0;            
+                vencer.ganhou = 1;
+                printf("\n\nO Jogador 2 Venceu!\n");
+                if(vencer.ganhou == 1){
+                    vencer.jogador2_vitorias++;
+                    printf("\nPlacar:\nVitorias do Jogador 1: %d\nVitorias do Jogador 2: %d\n", vencer.jogador1_vitorias, vencer.jogador2_vitorias);
+                }
+            }
+
+            if(design.jogo[2][0] == 'O' && design.jogo[1][1] == 'O' && design.jogo[0][2] =='O'){
+                printf("\n    0   1   2\n    V   V   V\n");
+                for(design.l = 0; design.l < 3; design.l++){
+                    for(design.c = 0; design.c < 3; design.c++){
+                        if(design.l == 0 && design.c == 0)
+                            printf("0 -");
+                        if(design.l == 1 && design.c == 0)
+                            printf("1 -");
+                        if(design.l == 2 && design.c == 0)
+                            printf("2 -");
+                        printf(" %c ", design.jogo[design.l][design.c]);
+                        if (design.c < 2)
+                            printf("|");
+                    }
+                    if(design.l < 2){
+                        printf("\n   -----------");
+                    printf("\n");
+                    }
+                }
+                jogadas.empate = 0;
+                vencer.ganhou = 1;
+                printf("\n\nO Jogador 1 Venceu!\n");
+                if(vencer.ganhou == 1){
+                    vencer.jogador1_vitorias++;
+                    jogadas.jogador = 1;
+                    printf("\nPlacar:\nVitorias do Jogador 1: %d\nVitorias do Jogador 2: %d\n", vencer.jogador1_vitorias, vencer.jogador2_vitorias);
+                }
+            }
+
+            if(design.jogo[2][0] == 'X' && design.jogo[1][1] == 'X' && design.jogo[0][2] =='X'){
+                printf("\n    0   1   2\n    V   V   V\n");
+                for(design.l = 0; design.l < 3; design.l++){
+                    for(design.c = 0; design.c < 3; design.c++){
+                        if(design.l == 0 && design.c == 0)
+                            printf("0 -");
+                        if(design.l == 1 && design.c == 0)
+                            printf("1 -");
+                        if(design.l == 2 && design.c == 0)
+                            printf("2 -");
+                        printf(" %c ", design.jogo[design.l][design.c]);
+                        if (design.c < 2)
+                            printf("|");
+                    }
+                    if(design.l < 2){
+                        printf("\n   -----------");
+                    printf("\n");
+                    }
+                }
+                jogadas.empate = 0;
+                vencer.ganhou = 1;
+                printf("\n\nO Jogador 2 Venceu!\n");
+                if(vencer.ganhou == 1){
+                    vencer.jogador2_vitorias++;
+                    printf("\nPlacar:\nVitorias do Jogador 1: %d\nVitorias do Jogador 2: %d\n", vencer.jogador1_vitorias, vencer.jogador2_vitorias);
+                }
+            }
+        }while(vencer.ganhou == 0 && jogadas.empate < 9);
+
+        vencer.ganhou = 1;
+
+        if(jogadas.empate > 8){
+            printf("\n    0   1   2\n    V   V   V\n");
+            for(design.l = 0; design.l < 3; design.l++){
+                for(design.c = 0; design.c < 3; design.c++){
+                    if(design.l == 0 && design.c == 0)
+                        printf("0 -");
+                    if(design.l == 1 && design.c == 0)
+                        printf("1 -");
+                    if(design.l == 2 && design.c == 0)
+                        printf("2 -");
+                    printf(" %c ", design.jogo[design.l][design.c]);
+                    if (design.c < 2)
+                        printf("|");
+                }
+                if(design.l < 2){
                     printf("\n   -----------");
                 printf("\n");
                 }
             }
-        do{
-            printf("\n\nJOGADOR %d: Digite a Linha e a Coluna que deseja jogar: ", jogador);
-            if(scanf("%d%d", &linha, &coluna) != 2 || (linha < 0 || linha >= 3 || coluna < 0 || coluna >= 3) ||
-            isalpha(linha) || isalpha(coluna)){
-                printf("Entrada invalida. Digite numeros validos.");
-                while(getchar() != '\n');
-                continue;
-            }else if(jogo[linha][coluna] != ' '){
-                printf("Espaco Ja Preenchido.");
-            }
-        } while ((linha < 0 || linha >= 3 || coluna < 0 || coluna >= 3) || isalpha(linha) || isalpha(coluna)|| jogo[linha][coluna] != ' ');
-
-        if(jogador == 1){
-            jogo[linha][coluna] = 'O';
-            jogador++;
-        } else{
-            jogo[linha][coluna] = 'X';
-            jogador = 1;
+            printf("\n\nEmpate.\n");
+            jogadas.empate = 0;
+            jogadas.jogador = 1;
         }
+        
+        printf("\nDeseja continuar jogando? ('S' para SIM, qualquer tecla para NAO): ");
+        scanf(" %c", &jogadas.continuar);
+        vencer.ganhou = 0;      
 
-        if(jogo[0][0] == 'O' && jogo[0][1] == 'O' && jogo[0][2] =='O'||
-        jogo[1][0] == 'O' && jogo[1][1] == 'O' && jogo[1][2] =='O'||
-        jogo[2][0] == 'O' && jogo[2][1] == 'O' && jogo[2][2] =='O'){
-            printf("\n    0   1   2\n    V   V   V\n");
-            for(l = 0; l < 3; l++){
-                for(c = 0; c < 3; c++){
-                    if(l == 0 && c == 0)
-                        printf("0 -");
-                    if(l == 1 && c == 0)
-                        printf("1 -");
-                    if(l == 2 && c == 0)
-                        printf("2 -");
-                    printf(" %c ", jogo[l][c]);
-                    if (c < 2)
-                        printf("|");
-                    }
-                    if(l < 2){
-                        printf("\n   -----------");
-                    printf("\n");
-                    }
-            }
-            ganhou = 1;
-            placar = 1;
-            printf("\n\nO Jogador 1 Venceu!\n");
-            if(placar == 1){
-                jogador1_vitorias++;
-                printf("\nPlacar:\nJogador 1: %d\nJogador 2: %d\n", jogador1_vitorias, jogador2_vitorias);
-            }
-        }
+        // Liberação de memória alocada ao final de cada jogo
+        liberarMemoria(&design);
 
-        if(jogo[0][0] == 'X' && jogo[0][1] == 'X' && jogo[0][2] =='X'||
-        jogo[1][0] == 'X' && jogo[1][1] == 'X' && jogo[1][2] =='X'||
-        jogo[2][0] == 'X' && jogo[2][1] == 'X' && jogo[2][2] =='X'){
-            printf("\n    0   1   2\n    V   V   V\n");
-            for(l = 0; l < 3; l++){
-                for(c = 0; c < 3; c++){
-                    if(l == 0 && c == 0)
-                        printf("0 -");
-                    if(l == 1 && c == 0)
-                        printf("1 -");
-                    if(l == 2 && c == 0)
-                        printf("2 -");
-                    printf(" %c ", jogo[l][c]);
-                    if (c < 2)
-                        printf("|");
-                    }
-                    if(l < 2){
-                        printf("\n   -----------");
-                    printf("\n");
-                    }
-            }            
-            ganhou = 1;
-            placar = 1;
-            printf("\n\nO Jogador 2 Venceu!\n");
-            if(placar == 1){
-                jogador1_vitorias++;
-                printf("\nPlacar:\nJogador 1: %d\nJogador 2: %d\n", jogador1_vitorias, jogador2_vitorias);
-            }
-        }
+    } while (jogadas.continuar == 's' || jogadas.continuar == 'S');
 
-        if(jogo[0][0] == 'O' && jogo[1][0] == 'O' && jogo[2][0] =='O'||
-        jogo[0][1] == 'O' && jogo[1][1] == 'O' && jogo[2][1] =='O'||
-        jogo[0][2] == 'O' && jogo[1][2] == 'O' && jogo[2][2] =='O'){
-            printf("\n    0   1   2\n    V   V   V\n");
-            for(l = 0; l < 3; l++){
-                for(c = 0; c < 3; c++){
-                    if(l == 0 && c == 0)
-                        printf("0 -");
-                    if(l == 1 && c == 0)
-                        printf("1 -");
-                    if(l == 2 && c == 0)
-                        printf("2 -");
-                    printf(" %c ", jogo[l][c]);
-                    if (c < 2)
-                        printf("|");
-                    }
-                    if(l < 2){
-                        printf("\n   -----------");
-                    printf("\n");
-                    }
-            }            
-            ganhou = 1;
-            placar = 1;
-            printf("\n\nO Jogador 1 Venceu!\n");
-            if(placar == 1){
-                jogador1_vitorias++;
-                printf("\nPlacar:\nJogador 1: %d\nJogador 2: %d\n", jogador1_vitorias, jogador2_vitorias);
-            }
-        }
-
-        if(jogo[0][0] == 'X' && jogo[1][0] == 'X' && jogo[2][0] =='X'||
-        jogo[0][1] == 'X' && jogo[1][1] == 'X' && jogo[2][1] =='X'||
-        jogo[0][2] == 'X' && jogo[1][2] == 'X' && jogo[2][2] =='X'){
-            printf("\n    0   1   2\n    V   V   V\n");
-            for(l = 0; l < 3; l++){
-                for(c = 0; c < 3; c++){
-                    if(l == 0 && c == 0)
-                        printf("0 -");
-                    if(l == 1 && c == 0)
-                        printf("1 -");
-                    if(l == 2 && c == 0)
-                        printf("2 -");
-                    printf(" %c ", jogo[l][c]);
-                    if (c < 2)
-                        printf("|");
-                    }
-                    if(l < 2){
-                        printf("\n   -----------");
-                    printf("\n");
-                    }
-            }            
-            ganhou = 1;
-            placar = 1;
-            printf("\n\nO Jogador 2 Venceu!\n");
-            if(placar == 1){
-                jogador1_vitorias++;
-                printf("\nPlacar:\nJogador 1: %d\nJogador 2: %d\n", jogador1_vitorias, jogador2_vitorias);
-            }
-        }
-
-        if(jogo[0][0] == 'O' && jogo[1][1] == 'O' && jogo[2][2] =='O'){
-            printf("\n    0   1   2\n    V   V   V\n");
-            for(l = 0; l < 3; l++){
-                for(c = 0; c < 3; c++){
-                    if(l == 0 && c == 0)
-                        printf("0 -");
-                    if(l == 1 && c == 0)
-                        printf("1 -");
-                    if(l == 2 && c == 0)
-                        printf("2 -");
-                    printf(" %c ", jogo[l][c]);
-                    if (c < 2)
-                        printf("|");
-                    }
-                    if(l < 2){
-                        printf("\n   -----------");
-                    printf("\n");
-                    }
-            }            
-            ganhou = 1;
-            placar = 1;
-            printf("\n\nO Jogador 1 Venceu!\n");
-            if(placar == 1){
-                jogador1_vitorias++;
-                printf("\nPlacar:\nJogador 1: %d\nJogador 2: %d\n", jogador1_vitorias, jogador2_vitorias);
-            }
-        }
-
-        if(jogo[0][0] == 'X' && jogo[1][1] == 'X' && jogo[2][2] =='X'){
-            printf("\n    0   1   2\n    V   V   V\n");
-            for(l = 0; l < 3; l++){
-                for(c = 0; c < 3; c++){
-                    if(l == 0 && c == 0)
-                        printf("0 -");
-                    if(l == 1 && c == 0)
-                        printf("1 -");
-                    if(l == 2 && c == 0)
-                        printf("2 -");
-                    printf(" %c ", jogo[l][c]);
-                    if (c < 2)
-                        printf("|");
-                    }
-                    if(l < 2){
-                        printf("\n   -----------");
-                    printf("\n");
-                    }
-            }            
-            ganhou = 1;
-            placar = 1;
-            printf("\n\nO Jogador 2 Venceu!\n");
-            if(placar == 1){
-                jogador1_vitorias++;
-                printf("\nPlacar:\nJogador 1: %d\nJogador 2: %d\n", jogador1_vitorias, jogador2_vitorias);
-            }
-        }
-
-        if(jogo[2][0] == 'O' && jogo[1][1] == 'O' && jogo[0][2] =='O'){
-            printf("\n    0   1   2\n    V   V   V\n");
-            for(l = 0; l < 3; l++){
-                for(c = 0; c < 3; c++){
-                    if(l == 0 && c == 0)
-                        printf("0 -");
-                    if(l == 1 && c == 0)
-                        printf("1 -");
-                    if(l == 2 && c == 0)
-                        printf("2 -");
-                    printf(" %c ", jogo[l][c]);
-                    if (c < 2)
-                        printf("|");
-                    }
-                    if(l < 2){
-                        printf("\n   -----------");
-                    printf("\n");
-                    }
-            }            
-            ganhou = 1;
-            placar = 1;
-            printf("\n\nO Jogador 1 Venceu!\n");
-            if(placar == 1){
-                jogador1_vitorias++;
-                printf("\nPlacar:\nJogador 1: %d\nJogador 2: %d\n", jogador1_vitorias, jogador2_vitorias);
-            }
-        }
-
-        if(jogo[2][0] == 'X' && jogo[1][1] == 'X' && jogo[0][2] =='X'){
-            printf("\n    0   1   2\n    V   V   V\n");
-            for(l = 0; l < 3; l++){
-                for(c = 0; c < 3; c++){
-                    if(l == 0 && c == 0)
-                        printf("0 -");
-                    if(l == 1 && c == 0)
-                        printf("1 -");
-                    if(l == 2 && c == 0)
-                        printf("2 -");
-                    printf(" %c ", jogo[l][c]);
-                    if (c < 2)
-                        printf("|");
-                    }
-                    if(l < 2){
-                        printf("\n   -----------");
-                    printf("\n");
-                    }
-            }            
-            ganhou = 1;
-            placar = 1;
-            printf("\n\nO Jogador 2 Venceu!\n");
-            if(placar == 1){
-                jogador1_vitorias++;
-                printf("\nPlacar:\nJogador 1: %d\nJogador 2: %d\n", jogador1_vitorias, jogador2_vitorias);
-            }
-        }
-    }while(ganhou == 0);
+    printf("Fim de Jogo.\n");
+    return 0;
 }
